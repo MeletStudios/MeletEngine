@@ -31,4 +31,3 @@ private:
 	// Position of Ball
 	Vector2 mBallPos;
 };
-
