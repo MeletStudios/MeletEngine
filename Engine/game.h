@@ -1,9 +1,14 @@
 #pragma once
 #include <SDL.h>
 
+struct Vector2 {
+	float x;
+	float y;
+};
+
 class Game {
 public:
-	// Game();
+	Game();
 
 	bool Initialize();
 
@@ -12,10 +17,18 @@ public:
 
 private:
 	void ProcessInput();
-	/*void UpdateGame();
-	void GenerateOutput();*/
+	//void UpdateGame();
+	void GenerateOutput();
 
 	SDL_Window* mWindow;
 	bool mIsRunning;
+
+	SDL_Renderer* mRenderer;
+
+	// Position of paddle
+	Vector2 mPaddlePos;
+
+	// Position of Ball
+	Vector2 mBallPos;
 };
 
