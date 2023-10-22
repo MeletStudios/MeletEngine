@@ -32,3 +32,7 @@
 *.exe
 *.out
 *.app
+
+# IDES
+*.vs
+*x64
