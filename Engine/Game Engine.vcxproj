@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="actor.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="Pong.cpp" />
     <ClCompile Include="main.cpp" />

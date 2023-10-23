@@ -1,4 +1,6 @@
 #include "game.h"
+#include "actor.h"
+#include <algorithm>
 
 Game::Game()
 :mWindow(nullptr)
@@ -43,6 +45,10 @@ void Game::ShutDown() {
 	SDL_DestroyWindow(mWindow);
 	SDL_DestroyRenderer(mRenderer);
 	SDL_Quit();
+
+	while (!mActors.empty()) {
+		delete mActors.back();
+	}
 }
 
 void Game::ProcessInput() {
@@ -64,14 +70,40 @@ void Game::ProcessInput() {
 void Game::UpdateGame() {
 	// Compute delta time
 	// Wait until 16ms has elapsed since last frame
-	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
-		;
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16));
 
 	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
 	if (deltaTime > 0.05f) {
 		deltaTime = 0.05f;
 	}
 	mTicksCount = SDL_GetTicks();
+
+	// Update all Actors
+	mUpdatingActors = true;
+
+	for (auto actor : mActors) {
+		actor -> Update(deltaTime);
+	}
+	mUpdatingActors = false;
+
+	// Move any pending actors to mActors
+	for (auto pending : mPendingActors) {
+		mActors.emplace_back(pending);
+	}
+	mPendingActors.clear();
+
+	// Add any dead actors to a temp vector
+	std::vector<Actor*> deadActors;
+	for (auto actor : mActors) {
+		if (actor->GetState() == Actor::aDead) {
+			deadActors.emplace_back(actor);
+		}
+	}
+
+	// Delete dead actors (which removes them from mActors)
+	for (auto actor : deadActors) {
+		delete actor;
+	}
 }
 
 void Game::GenerateOutput() {
@@ -87,5 +119,23 @@ void Game::AddActor(Actor* actor) {
 	}
 	else {
 		mActors.emplace_back(actor);
+	}
+}
+
+void Game::RemoveActor(Actor* actor) {
+	// is it in pending actors?
+	auto iter = std::find(mPendingActors.begin(), mPendingActors.end(), actor);
+	if (iter != mPendingActors.end()) {
+		// Swap to the end of vector and pop off (avoid erase copies)
+		std::iter_swap(iter, mActors.end() - 1);
+		mPendingActors.pop_back();
+	}
+
+	// Is it in actors?
+	iter = std::find(mActors.begin(), mActors.end(), actor);
+	if (iter != mActors.end()) {
+		// Swap to the end of the vector and pop off
+		std::iter_swap(iter, mActors.end());
+		mActors.pop_back();
 	}
 }
